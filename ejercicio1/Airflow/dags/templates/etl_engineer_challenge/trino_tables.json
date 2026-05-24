@@ -1,0 +1,146 @@
+{
+  "tables": [
+    {
+      "table": "tbl_data",
+      "external_location": "s3a://bck-bronze/master/",
+      "format": "PARQUET",
+      "columns": [
+        {
+          "name": "name",
+          "type": "varchar"
+        },
+        {
+          "name": "created_at",
+          "type": "date"
+        },
+        {
+          "name": "total_transactions",
+          "type": "integer"
+        },
+        {
+          "name": "valid_amount_transactions",
+          "type": "integer"
+        },
+        {
+          "name": "invalid_amount_transactions",
+          "type": "integer"
+        },
+        {
+          "name": "total_amount",
+          "type": "double"
+        },
+        {
+          "name": "avg_amount",
+          "type": "double"
+        },
+        {
+          "name": "min_amount",
+          "type": "double"
+        },
+        {
+          "name": "max_amount",
+          "type": "double"
+        },
+        {
+          "name": "unique_customers",
+          "type": "integer"
+        },
+        {
+          "name": "unique_companies",
+          "type": "integer"
+        },
+        {
+          "name": "invalid_id_count",
+          "type": "integer"
+        },
+        {
+          "name": "invalid_status_count",
+          "type": "integer"
+        },
+        {
+          "name": "paid_before_created_count",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "table": "tbl_observed_records",
+      "external_location": "s3a://bck-bronze/quality/",
+      "format": "PARQUET",
+      "columns": [
+        {
+          "name": "id",
+          "type": "varchar"
+        },
+        {
+          "name": "name",
+          "type": "varchar"
+        },
+        {
+          "name": "company_id",
+          "type": "varchar"
+        },
+        {
+          "name": "amount",
+          "type": "double"
+        },
+        {
+          "name": "status",
+          "type": "varchar"
+        },
+        {
+          "name": "created_at",
+          "type": "date"
+        },
+        {
+          "name": "paid_at",
+          "type": "date"
+        },
+        {
+          "name": "amount_clean",
+          "type": "double"
+        },
+        {
+          "name": "is_null_id",
+          "type": "boolean"
+        },
+        {
+          "name": "is_null_name",
+          "type": "boolean"
+        },
+        {
+          "name": "is_null_company_id",
+          "type": "boolean"
+        },
+        {
+          "name": "is_invalid_id",
+          "type": "boolean"
+        },
+        {
+          "name": "is_invalid_created_at",
+          "type": "boolean"
+        },
+        {
+          "name": "is_invalid_paid_at",
+          "type": "boolean"
+        },
+        {
+          "name": "is_paid_before_created",
+          "type": "boolean"
+        },
+        {
+          "name": "is_invalid_status",
+          "type": "boolean"
+        },
+        {
+          "name": "is_invalid_amount",
+          "type": "boolean"
+        },
+        {
+          "name": "is_suspicious_amount",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "dag_id": "etl_engineer_challenge",
+  "description": "ETL process using Airflow, MinIO, Polars and Trino for the technical challenge.",
+  "schedule_interval": null,
+  "start_date": "2026-01-01",
+  "catchup": false,
+  "owner": "Diego",
+  "tags": ["challenge", "airflow", "minio", "polars", "trino"],
+  "default_args": {
+    "retries": 1,
+    "retry_delay": 10
+  },
+  "pipeline": {
+    "module": "include.pipelines.etl_engineer_challenge.process",
+    "callable": "process_transactions"
+  },
+  "datalake": {
+    "landing_bucket": "bck-landing",
+    "bronze_bucket": "bck-bronze",
+    "landing_object_path": "data/data_prueba_tecnica.csv",
+    "bronze_object_path": "master/data_prueba_tecnica.parquet",
+    "observed_records_object_path": "quality/observed_records.parquet",
+    "local_input_file": "/opt/airflow/data/data_prueba_tecnica.csv",
+    "local_work_parquet": "/tmp/data_prueba_tecnica.parquet",
+    "local_observed_records_parquet": "/tmp/observed_records.parquet"
+  },
+  "trino": {
+    "catalog": "bronze",
+    "schema": "prueba",
+    "schema_location": "s3a://bck-bronze/",
+    "tables_config_path": "/opt/airflow/dags/templates/etl_engineer_challenge/trino_tables.json"
+  },
+  "tasks": [
+    {
+      "order": 0,
+      "task_id": "start",
+      "type": "empty"
+    },
+    {
+      "order": 1,
+      "task_id": "create_minio_buckets",
+      "type": "python",
+      "callable": "create_minio_buckets"
+    },
+    {
+      "order": 2,
+      "task_id": "upload_csv_to_landing",
+      "type": "python",
+      "callable": "upload_csv_to_landing"
+    },
+    {
+      "order": 3,
+      "task_id": "process_with_polars",
+      "type": "python",
+      "callable": "process_with_polars"
+    },
+    {
+      "order": 4,
+      "task_id": "upload_parquet_to_bronze",
+      "type": "python",
+      "callable": "upload_parquet_to_bronze"
+    },
+    {
+      "order": 5,
+      "task_id": "upload_observed_records_to_bronze",
+      "type": "python",
+      "callable": "upload_observed_records_to_bronze"
+    },
+    {
+      "order": 6,
+      "task_id": "create_trino_schema",
+      "type": "python",
+      "callable": "create_trino_schema"
+    },
+    {
+      "order": 7,
+      "task_id": "create_trino_tables",
+      "type": "python",
+      "callable": "create_trino_tables"
+    },
+    {
+      "order": 8,
+      "task_id": "validate_trino_tables",
+      "type": "python",
+      "callable": "validate_trino_tables"
+    },
+    {
+      "order": 9,
+      "task_id": "end",
+      "type": "empty"
+    }
+  ]
+}
