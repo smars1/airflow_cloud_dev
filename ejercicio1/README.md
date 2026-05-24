@@ -19,18 +19,18 @@ Estas correcciones se aplican automaticamente porque no cambian el significado d
 
 Estas inconsistencias se detectan y se reportan, pero no se corrigen automaticamente porque requieren una regla de negocio validada:
 
-- ``Ids`` nulos o no compatibles con formato hash.
-- ``Ids`` como `*******`.
-- ``Status`` fuera del catalogo esperado.
-- ``Names`` sospechosos o corruptos.
-- ``Company_id`` asociado a multiples ``names``.
-- ``Name`` asociado a multiples ``company_id``.
-- ``Amount`` extremadamente alto.
-- ``Paid_at`` menor que ``created_at``.
+- ``Ids`` nulos o no compatibles con formato hash
+- ``Ids`` como `*******`
+- ``Status`` fuera del catalogo esperado
+- ``Names`` sospechosos o corruptos
+- ``Company_id`` asociado a multiples ``names``
+- ``Name`` asociado a multiples ``company_id``
+- ``Amount`` extremadamente alto
+- ``Paid_at`` menor que ``created_at``
 
 ### Criterio aplicado
 
-No se aplican correcciones de negocio no validadas. Las inconsistencias detectadas se encapsulan en la salida de calidad:
+No se aplican correcciones de negocio no validadas Las inconsistencias detectadas se encapsulan en la salida de calidad:
 
 ```text
 bck-bronze/quality/observed_records.parquet
@@ -164,6 +164,35 @@ Para un ambiente productivo, Airflow deberia orquestar un job externo, por ejemp
 
 5 Guardar una captura de pantalla como imagen, de la query con Trino usando 
 DBeaver
+
+Se deja adjunta la captura de ``tbl_data`` al consultar la tabla mediante DBeaver con la siguiente query
+
+```sql
+SELECT *
+FROM bronze.prueba.tbl_data
+limit 20;
+```
+#### Captura de la query
+![alt text](ejercicio1-trino_query_result.png)
+
+##### Descripcion de tabla ``tbl_data``
+
+| Columna                       | Tipo esperado | Descripcion                                                                                                                                                                        |
+| ----------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                        | `varchar`     | Nombre normalizado del comercio o compania. Se utiliza como una de las llaves de agrupacion.                                                                                       |
+| `created_at`                  | `date`        | Fecha de creacion de las transacciones. Se utiliza como segunda llave de agrupacion.                                                                                               |
+| `total_transactions`          | `integer`     | Numero total de transacciones encontradas para ese `name` y `created_at`.                                                                                                          |
+| `valid_amount_transactions`   | `integer`     | Numero de transacciones con monto valido para calculos monetarios.                                                                                                                 |
+| `invalid_amount_transactions` | `integer`     | Numero de transacciones con monto invalido, por ejemplo valores nulos, negativos, infinitos o extremadamente altos.                                                                |
+| `total_amount`                | `double`      | Suma total de los montos validos usando `amount_clean`. No utiliza montos marcados como invalidos.                                                                                 |
+| `avg_amount`                  | `double`      | Promedio de los montos validos usando `amount_clean`.                                                                                                                              |
+| `min_amount`                  | `double`      | Monto minimo valido dentro del grupo.                                                                                                                                              |
+| `max_amount`                  | `double`      | Monto maximo valido dentro del grupo.                                                                                                                                              |
+| `unique_customers`            | `integer`     | Numero de clientes unicos dentro del grupo, calculado con `id`. Como los ids estan enmascarados con hash, se usa para estimar clientes distintos sin exponer informacion sensible. |
+| `unique_companies`            | `integer`     | Numero de `company_id` distintos dentro del mismo `name` y `created_at`. Si este valor es mayor a 1, puede indicar una inconsistencia entre `name` y `company_id`.                 |
+| `invalid_id_count`            | `integer`     | Numero de registros dentro del grupo con `id` nulo, placeholder o formato no compatible con el hash esperado.                                                                      |
+| `invalid_status_count`        | `integer`     | Numero de registros dentro del grupo con `status` fuera del catalogo esperado.                                                                                                     |
+| `paid_before_created_count`   | `integer`     | Numero de registros donde `paid_at` es menor que `created_at`, lo cual indica una inconsistencia temporal.                                                                         |
 
 
 
