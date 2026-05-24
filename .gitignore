@@ -1,0 +1,45 @@
+# Env files
+.env
+.env.local
+.env.dev
+.env.prod
+
+# Airflow runtime
+ejercicio1/Airflow/logs/*
+!ejercicio1/Airflow/logs/.gitkeep
+!ejercicio1/Airflow/plugins/*
+!ejercicio1/Airflow/plugins/.gitkeep
+
+# MinIO runtime data
+ejercicio1/Minio/data/*
+!ejercicio1/Minio/data/.gitkeep
+
+# Databases / runtime volumes
+postgres-db-volume/
+mysql-data/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+requirements.txt
+
+# Local generated files
+*.parquet
+output_*.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
