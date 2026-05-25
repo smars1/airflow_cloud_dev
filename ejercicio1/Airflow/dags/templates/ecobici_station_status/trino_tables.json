@@ -1,0 +1,59 @@
+{
+  "tables": [
+    {
+      "table": "tbl_ecobici_station_status",
+      "external_location": "s3a://bck-bronze/ecobici/station_status/",
+      "format": "PARQUET",
+      "columns": [
+        {
+          "name": "station_id",
+          "type": "varchar"
+        },
+        {
+          "name": "num_bikes_available",
+          "type": "integer"
+        },
+        {
+          "name": "num_docks_available",
+          "type": "integer"
+        },
+        {
+          "name": "is_installed",
+          "type": "integer"
+        },
+        {
+          "name": "is_renting",
+          "type": "integer"
+        },
+        {
+          "name": "is_returning",
+          "type": "integer"
+        },
+        {
+          "name": "last_reported",
+          "type": "timestamp"
+        },
+        {
+          "name": "feed_last_updated",
+          "type": "timestamp"
+        },
+        {
+          "name": "ingestion_timestamp",
+          "type": "timestamp"
+        },
+        {
+          "name": "extraction_date",
+          "type": "date"
+        },
+        {
+          "name": "is_invalid_availability",
+          "type": "boolean"
+        },
+        {
+          "name": "is_station_unavailable",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

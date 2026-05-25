@@ -1,0 +1,91 @@
+{
+  "dag_id": "ecobici_station_status_pipeline",
+  "description": "Periodic ETL pipeline for ECOBICI station status using Airflow, Polars, MinIO and Trino.",
+  "schedule_interval": "*/10 * * * *",
+  "start_date": "2026-01-01",
+  "catchup": false,
+  "owner": "Diego",
+  "tags": [
+    "plus",
+    "ecobici",
+    "airflow",
+    "minio",
+    "polars",
+    "trino"
+  ],
+  "default_args": {
+    "retries": 1,
+    "retry_delay": 10
+  },
+  "pipeline": {
+    "module": "include.pipelines.ecobici_station_status.process",
+    "callable": "process_station_status"
+  },
+  "pipeline_args": {
+    "gbfs_url": "https://gbfs.mex.lyftbikes.com/gbfs/gbfs.json",
+    "language": "es",
+    "feed_name": "station_status"
+  },
+  "datalake": {
+    "landing_bucket": "bck-landing",
+    "bronze_bucket": "bck-bronze",
+    "landing_object_path": "ecobici/raw/station_status.json",
+    "bronze_object_path": "ecobici/station_status/data.parquet",
+    "local_input_file": "/tmp/not_used.csv",
+    "local_work_parquet": "/tmp/ecobici_station_status.parquet"
+  },
+  "trino": {
+    "catalog": "bronze",
+    "schema": "prueba",
+    "schema_location": "s3a://bck-bronze/",
+    "tables_config_path": "/opt/airflow/dags/templates/ecobici_station_status/trino_tables.json"
+  },
+  "tasks": [
+    {
+      "order": 0,
+      "task_id": "start",
+      "type": "empty"
+    },
+    {
+      "order": 1,
+      "task_id": "create_minio_buckets",
+      "type": "python",
+      "callable": "create_minio_buckets"
+    },
+    {
+      "order": 2,
+      "task_id": "process_with_polars",
+      "type": "python",
+      "callable": "process_with_polars"
+    },
+    {
+      "order": 3,
+      "task_id": "upload_parquet_to_bronze",
+      "type": "python",
+      "callable": "upload_parquet_to_bronze"
+    },
+    {
+      "order": 4,
+      "task_id": "create_trino_schema",
+      "type": "python",
+      "callable": "create_trino_schema"
+    },
+    {
+      "order": 5,
+      "task_id": "create_trino_tables",
+      "type": "python",
+      "callable": "create_trino_tables"
+    },
+    {
+      "order": 6,
+      "task_id": "validate_trino_tables",
+      "type": "python",
+      "callable": "validate_trino_tables"
+    },
+    {
+      "order": 7,
+      "task_id": "end",
+      "type": "empty"
+    }
+  ]
+}
