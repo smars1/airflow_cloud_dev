@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 import os
@@ -17,8 +18,8 @@ from include.common.minio_client import (
     upload_file_to_minio,
 )
 from include.common.trino_client import (
-    create_trino_schema,
     create_external_table,
+    create_trino_schema,
     validate_table_count,
 )
 
@@ -46,6 +47,21 @@ def load_pipeline_callable(module_path: str, callable_name: str) -> Callable:
         )
 
     return getattr(module, callable_name)
+
+
+def call_pipeline_safely(
+    pipeline_callable: Callable,
+    available_args: dict,
+) -> dict:
+    signature = inspect.signature(pipeline_callable)
+
+    accepted_args = {
+        arg_name: arg_value
+        for arg_name, arg_value in available_args.items()
+        if arg_name in signature.parameters
+    }
+
+    return pipeline_callable(**accepted_args)
 
 
 def load_trino_tables_config(config: dict) -> dict:
@@ -169,7 +185,10 @@ def build_callable_registry(
     datalake: dict,
     trino_config: dict,
     pipeline_callable: Callable,
+    pipeline_args: dict | None = None,
 ) -> dict[str, Callable]:
+    pipeline_args = pipeline_args or {}
+
     def create_minio_buckets_fn():
         create_bucket_if_not_exists(datalake["landing_bucket"])
         create_bucket_if_not_exists(datalake["bronze_bucket"])
@@ -193,11 +212,19 @@ def build_callable_registry(
         }
 
     def process_with_polars_fn():
-        return pipeline_callable(
-            landing_bucket=datalake["landing_bucket"],
-            landing_object_path=datalake["landing_object_path"],
-            output_path=datalake["local_work_parquet"],
-            observed_output_path=datalake.get("local_observed_records_parquet"),
+        available_args = {
+            "landing_bucket": datalake.get("landing_bucket"),
+            "landing_object_path": datalake.get("landing_object_path"),
+            "bronze_bucket": datalake.get("bronze_bucket"),
+            "bronze_object_path": datalake.get("bronze_object_path"),
+            "output_path": datalake.get("local_work_parquet"),
+            "observed_output_path": datalake.get("local_observed_records_parquet"),
+            **pipeline_args,
+        }
+
+        return call_pipeline_safely(
+            pipeline_callable=pipeline_callable,
+            available_args=available_args,
         )
 
     def upload_parquet_to_bronze_fn():
@@ -339,6 +366,7 @@ def create_dag_from_config(config: dict) -> DAG:
     dag_id = config["dag_id"]
     datalake = config["datalake"]
     trino_config = config["trino"]
+    pipeline_args = config.get("pipeline_args", {})
 
     pipeline_callable = load_pipeline_callable(
         module_path=config["pipeline"]["module"],
@@ -366,6 +394,7 @@ def create_dag_from_config(config: dict) -> DAG:
             datalake=datalake,
             trino_config=trino_config,
             pipeline_callable=pipeline_callable,
+            pipeline_args=pipeline_args,
         )
 
         ordered_task_configs = sorted(

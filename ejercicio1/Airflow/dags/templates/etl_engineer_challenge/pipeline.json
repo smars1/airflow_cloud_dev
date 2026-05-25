@@ -5,7 +5,13 @@
   "start_date": "2026-01-01",
   "catchup": false,
   "owner": "Diego",
-  "tags": ["challenge", "airflow", "minio", "polars", "trino"],
+  "tags": [
+    "challenge",
+    "airflow",
+    "minio",
+    "polars",
+    "trino"
+  ],
   "default_args": {
     "retries": 1,
     "retry_delay": 10
@@ -14,6 +20,7 @@
     "module": "include.pipelines.etl_engineer_challenge.process",
     "callable": "process_transactions"
   },
+  "pipeline_args": {},
   "datalake": {
     "landing_bucket": "bck-landing",
     "bronze_bucket": "bck-bronze",
