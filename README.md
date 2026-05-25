@@ -6,4 +6,4 @@ La entrega se divide en dos secciones principales, de acuerdo con los requerimie
 - `ejercicio1/`: implementacion practica del pipeline con Airflow, MinIO, Polars y Trino.
 - `ejercicio2/`: documentacion de arquitectura, justificacion tecnica y diagrama solicitado.
 
----`
+---
